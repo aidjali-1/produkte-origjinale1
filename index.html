@@ -1,359 +1,66 @@
-<!--
-TiranaRP - Mobile-first Webshop (single-file)
-Save this file as `index.html` and open in Visual Studio Code.
-Recommended: install Live Server extension and click "Go Live" to test.
-
-IMPORTANT: Replace `SELLER_PHONE` value (below) with your WhatsApp number in
-international format WITHOUT the + or leading zeros (e.g. 355691234567 for Albania).
--->
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="sq">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>PRODUKTE ORIGJINALE</title>
-  <meta name="description" content="Porosit ktu dhe te vijne ne poste! Po ashtu paguani dhe ne poste!">
-  <style>
-    /* ------------------------- Basic reset & layout ------------------------- */
-    :root{--bg:#ffffff;--fg:#0a0a0a;--muted:#666}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:var(--fg);background:var(--bg)}
-    a{color:inherit;text-decoration:none}
-
-    /* ------------------------- Header ------------------------- */
-    header{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid #eee;padding:10px 12px;display:flex;align-items:center;gap:8px}
-    .brand{font-weight:700;font-size:18px}
-
-    /* search & cart area */
-    .controls{display:flex;align-items:center;gap:8px;margin-left:auto}
-    .search-wrap{position:relative;flex:1;max-width:520px}
-    input.search{width:100%;padding:10px 40px 10px 12px;border-radius:999px;border:1px solid #ddd;background:#fff}
-    .cart-btn{position:relative;border:1px solid #ddd;padding:8px;border-radius:999px;background:#fff;display:inline-flex;align-items:center;gap:8px}
-    .cart-count{position:absolute;top:-6px;right:-6px;background:var(--fg);color:var(--bg);font-size:12px;width:18px;height:18px;border-radius:999px;display:grid;place-items:center}
-
-    /* ------------------------- Categories ------------------------- */
-    .categories{display:flex;gap:8px;padding:10px;overflow:auto}
-    .cat{white-space:nowrap;padding:8px 12px;border-radius:999px;border:1px solid #ddd;background:#fff;font-size:14px}
-    .cat.active{background:var(--fg);color:var(--bg)}
-
-    /* ------------------------- Product grid ------------------------- */
-    main{padding:12px}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
-    .card{border:1px solid #eee;border-radius:10px;padding:8px;background:#fff}
-    .thumb{aspect-ratio:1/1;border-radius:8px;display:block;overflow:hidden;margin-bottom:8px;background:#f6f6f6;display:grid;place-items:center}
-    .thumb img{max-width:100%;max-height:100%;object-fit:cover}
-    .pname{font-weight:600;font-size:14px}
-    .price{font-weight:700;margin-top:6px}
-    .small{font-size:13px;color:var(--muted)}
-
-    /* ------------------------- Modal and cart panel ------------------------- */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:flex-end;z-index:120}
-    .panel{background:var(--bg);width:100%;max-height:92vh;border-top-left-radius:12px;border-top-right-radius:12px;padding:12px;overflow:auto}
-    .modal-image{height:220px;border-radius:10px;overflow:hidden;background:#f6f6f6}
-
-    /* cart list */
-    .cart-list{display:flex;flex-direction:column;gap:8px}
-    .cart-item{display:flex;gap:10px;align-items:center}
-    .qty{display:inline-flex;align-items:center;gap:6px}
-    button.btn{border:1px solid #111;padding:8px 12px;border-radius:8px;background:var(--fg);color:var(--bg);font-weight:600}
-    button.ghost{background:transparent;color:var(--fg)}
-
-    /* order form */
-    form.row{display:grid;gap:8px}
-    input,textarea,select{padding:10px;border-radius:8px;border:1px solid #ddd}
-
-    /* footer spacer to avoid obstruction on mobile */
-    .spacer{height:70px}
-
-    /* small helpers */
-    .muted{color:var(--muted);font-size:13px}
-    .center{display:flex;align-items:center;justify-content:center}
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRODUKTE ORIGJINALE</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-  <div class="brand">PRODUKTE ORIGJINALE</div>
-  <div class="controls" style="flex:1;min-width:0">
-    <div class="search-wrap">
-      <input id="searchInput" class="search" placeholder="Kërko produkte ose ID..." aria-label="Kërko">
+    <!-- Header -->
+    <header>
+        <h1>PRODUKTE ORIGJINALE</h1>
+        <div class="header-right">
+            <input type="text" id="search" placeholder="Kërko...">
+            <div class="cart-icon" onclick="openCart()">
+                🛒<span class="cart-count" id="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Lista e produkteve -->
+    <main>
+        <div class="products" id="product-list"></div>
+    </main>
+
+    <!-- Modal produkti -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body"></div>
+        </div>
     </div>
-    <button id="cartBtn" class="cart-btn" aria-label="Shporta">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"></path><circle cx="9" cy="20" r="1"></circle><circle cx="19" cy="20" r="1"></circle></svg>
-      <span id="cartCount" class="cart-count" style="display:none">0</span>
-    </button>
-  </div>
-</header>
 
-<!-- categories -->
-<div class="categories" id="categories"></div>
+    <!-- Modal shporta -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCart()">&times;</span>
+            <h2>Shporta</h2>
+            <div id="cart-items"></div>
+            <h3 id="total-price"></h3>
+            <button onclick="showOrderForm()">Porosit</button>
+        </div>
+    </div>
 
-<main>
-  <section class="grid" id="productGrid"></section>
-</main>
+    <!-- Modal porosie -->
+    <div class="modal" id="order-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeOrderForm()">&times;</span>
+            <h2>Porosit</h2>
+            <form id="order-form">
+                <input type="text" placeholder="Emri" required>
+                <input type="text" placeholder="Mbiemri" required>
+                <input type="text" placeholder="Kodi postar" required>
+                <input type="text" placeholder="Qyteti" required>
+                <input type="text" placeholder="Adresa" required>
+                <input type="tel" value="+355683848110" required>
+                <textarea placeholder="Koment (opsional)"></textarea>
+                <button type="submit">Dërgo porosinë</button>
+            </form>
+        </div>
+    </div>
 
-<!-- overlay panel for product details / cart -->
-<div id="overlay" class="overlay">
-  <div class="panel" id="panelContent"></div>
-</div>
-
-<div class="spacer"></div>
-
-<script>
-/* ------------------------- Configuration ------------------------- */
-// Replace this with your phone number so orders open WhatsApp to your number
-const SELLER_PHONE = '355683848110'; // e.g. '355691234567'
-
-/* ------------------------- Sample product data ------------------------- */
-// You can add/remove categories easily by changing the categories array
-const categories = ['Te gjitha','Aksesore','Rroba','Tjeter'];
-
-const products = [
-  {id:'A001',name:'Kapelë e zezë',category:'Aksesore',price:900,images:['data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="100%" height="100%" fill="%23000"/><text x="50%" y="50%" fill="%23fff" font-size="28" text-anchor="middle" dy=".35em">Kapelë</text></svg>'],desc:'Kapelë stil minimal.',options:{sizes:['One-size'],colors:['E zezë']}},
-  {id:'R101',name:'T-shirt Classic',category:'Rroba',price:1800,images:['data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="100%" height="100%" fill="%23ddd"/><text x="50%" y="50%" fill="%23000" font-size="24" text-anchor="middle" dy=".35em">T-Shirt</text></svg>'],desc:'T-shirt pambuk i rehatshëm.',options:{sizes:['S','M','L'],colors:['E bardhë','E zezë']}},
-  {id:'A002',name:'Varëse metalike',category:'Aksesore',price:1200,images:['data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="100%" height="100%" fill="%23f5f5f5"/><text x="50%" y="50%" fill="%23000" font-size="24" text-anchor="middle" dy=".35em">Varëse</text></svg>'],desc:'Varëse metalike elegante.',options:{sizes:[],colors:['Metalike']}},
-];
-
-/* ------------------------- App State ------------------------- */
-let state = {
-  activeCategory: 'Te gjitha',
-  query: '',
-  cart: [] // {productId, qty, chosenOptions}
-};
-
-/* ------------------------- Utilities ------------------------- */
-const el = id => document.getElementById(id);
-const formatPrice = v => (v/100).toFixed(2) + ' L'; // assuming price in cents-like (change if needed)
-
-/* ------------------------- Render categories ------------------------- */
-function renderCategories(){
-  const container = document.createElement('div');
-  container.style.display='contents';
-  const wrap = document.getElementById('categories');
-  wrap.innerHTML='';
-  categories.forEach(cat=>{
-    const b = document.createElement('button');
-    b.className='cat' + (cat===state.activeCategory ? ' active' : '');
-    b.textContent = cat;
-    b.onclick = ()=>{ state.activeCategory = cat; renderProducts(); renderCategories(); }
-    wrap.appendChild(b);
-  })
-}
-
-/* ------------------------- Render products ------------------------- */
-function matchesFilter(p){
-  const catOk = state.activeCategory==='Te gjitha' || p.category===state.activeCategory;
-  const q = state.query.trim().toLowerCase();
-  const qOk = q==='' || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
-  return catOk && qOk;
-}
-
-function renderProducts(){
-  const grid = document.getElementById('productGrid');
-  grid.innerHTML='';
-  const shown = products.filter(matchesFilter);
-  if(shown.length===0){ grid.innerHTML='<div class="muted">Nuk u gjetën produkte.</div>'; return }
-  shown.forEach(p=>{
-    const card = document.createElement('article'); card.className='card';
-    const thumb = document.createElement('a'); thumb.className='thumb'; thumb.href='#';
-    const img = document.createElement('img'); img.src = p.images[0]; img.alt = p.name;
-    thumb.appendChild(img);
-    thumb.onclick = (e)=>{ e.preventDefault(); openProductModal(p.id); }
-
-    const name = document.createElement('div'); name.className='pname'; name.textContent = p.name;
-    const price = document.createElement('div'); price.className='price'; price.textContent = formatPrice(p.price);
-    const small = document.createElement('div'); small.className='small'; small.textContent = 'ID: '+p.id;
-
-    const addBtn = document.createElement('button'); addBtn.className='btn'; addBtn.textContent='Shto në kosh';
-    addBtn.onclick = ()=>{ addToCart(p.id,1); }
-
-    card.appendChild(thumb); card.appendChild(name); card.appendChild(small); card.appendChild(price);
-    const bwrap = document.createElement('div'); bwrap.style.marginTop='8px'; bwrap.appendChild(addBtn);
-    card.appendChild(bwrap);
-    grid.appendChild(card);
-  })
-}
-
-/* ------------------------- Product modal ------------------------- */
-function openProductModal(productId){
-  const p = products.find(x=>x.id===productId); if(!p) return;
-  const overlay = el('overlay'); const panel = el('panelContent');
-  panel.innerHTML = '';
-  const header = document.createElement('div'); header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
-  const h = document.createElement('div'); h.innerHTML = `<div style="font-weight:700">${p.name}</div><div class="muted">ID: ${p.id}</div>`;
-  const close = document.createElement('button'); close.className='ghost'; close.textContent='Mbylle'; close.onclick=closeOverlay;
-  header.appendChild(h); header.appendChild(close);
-
-  const imgWrap = document.createElement('div'); imgWrap.className='modal-image';
-  const img = document.createElement('img'); img.src=p.images[0]; img.alt=p.name; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover';
-  imgWrap.appendChild(img);
-
-  const desc = document.createElement('div'); desc.style.marginTop='8px'; desc.innerHTML = `<div class="muted">${p.category}</div><div style="margin-top:6px">${p.desc}</div>`;
-  const opts = document.createElement('div'); opts.style.marginTop='8px';
-
-  // options (sizes/colors)
-  if(p.options && (p.options.sizes?.length || p.options.colors?.length)){
-    if(p.options.sizes?.length){
-      const sel = document.createElement('select'); sel.id='opt_size'; sel.innerHTML = p.options.sizes.map(s=>`<option value="${s}">${s}</option>`).join('');
-      opts.appendChild(document.createTextNode('Madhësia: ')); opts.appendChild(sel);
-    }
-    if(p.options.colors?.length){
-      const sel2 = document.createElement('select'); sel2.id='opt_color'; sel2.style.marginLeft='8px'; sel2.innerHTML = p.options.colors.map(s=>`<option value="${s}">${s}</option>`).join('');
-      opts.appendChild(document.createTextNode('Ngjyra: ')); opts.appendChild(sel2);
-    }
-  }
-
-  const price = document.createElement('div'); price.className='price'; price.textContent = formatPrice(p.price);
-  const addRow = document.createElement('div'); addRow.style.display='flex'; addRow.style.gap='8px'; addRow.style.marginTop='10px';
-  const qty = document.createElement('input'); qty.type='number'; qty.value=1; qty.min=1; qty.style.width='80px'; qty.style.padding='8px'; qty.style.border='1px solid #ddd'; qty.style.borderRadius='8px';
-  const addBtn = document.createElement('button'); addBtn.className='btn'; addBtn.textContent='Shto në kosh';
-  addBtn.onclick = ()=>{ addToCart(p.id, Number(qty.value), {size:el('opt_size')?.value, color:el('opt_color')?.value}); closeOverlay(); }
-  addRow.appendChild(qty); addRow.appendChild(addBtn);
-
-  panel.appendChild(header); panel.appendChild(imgWrap); panel.appendChild(price); panel.appendChild(desc); panel.appendChild(opts); panel.appendChild(addRow);
-  overlay.style.display='flex';
-}
-function closeOverlay(){ el('overlay').style.display='none'; el('panelContent').innerHTML=''; }
-
-/* ------------------------- Cart functions ------------------------- */
-function findCartIndex(productId, chosenOptions){
-  return state.cart.findIndex(c=> c.productId===productId && JSON.stringify(c.chosenOptions||{})===JSON.stringify(chosenOptions||{}));
-}
-function addToCart(productId, qty=1, chosenOptions={}){
-  const idx = findCartIndex(productId, chosenOptions);
-  if(idx>=0){ state.cart[idx].qty += qty; }
-  else state.cart.push({productId,qty,chosenOptions});
-  renderCartCount();
-  showMiniToast('U shtua në kosh');
-}
-function renderCartCount(){
-  const n = state.cart.reduce((s,c)=>s+c.qty,0);
-  const elc = el('cartCount'); if(n>0){ elc.style.display='grid'; elc.textContent = n; } else elc.style.display='none';
-}
-
-function openCart(){
-  const overlay = el('overlay'); const panel = el('panelContent'); panel.innerHTML='';
-  const header = document.createElement('div'); header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
-  const title = document.createElement('div'); title.innerHTML='<div style="font-weight:700">Shporta</div><div class="muted">Produkte që dëshironi të porosisni</div>';
-  const close = document.createElement('button'); close.className='ghost'; close.textContent='Mbylle'; close.onclick=closeOverlay;
-  header.appendChild(title); header.appendChild(close);
-  panel.appendChild(header);
-
-  const list = document.createElement('div'); list.className='cart-list'; list.style.marginTop='10px';
-  if(state.cart.length===0){ list.innerHTML = '<div class="muted">Kosh i zbrazët.</div>'; panel.appendChild(list); overlay.style.display='flex'; return }
-
-  state.cart.forEach((c, idx)=>{
-    const p = products.find(x=>x.id===c.productId);
-    const item = document.createElement('div'); item.className='cart-item';
-    const thumb = document.createElement('div'); thumb.style.width='64px'; thumb.style.height='64px'; thumb.style.borderRadius='8px'; thumb.style.overflow='hidden'; thumb.style.background='#f6f6f6';
-    const img = document.createElement('img'); img.src=p.images[0]; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; thumb.appendChild(img);
-
-    const info = document.createElement('div'); info.style.flex='1'; info.innerHTML = `<div style="font-weight:700">${p.name}</div><div class="muted">ID: ${p.id} ${c.chosenOptions? ' - ' + Object.values(c.chosenOptions).filter(Boolean).join(', '):''}</div>`;
-    const qtyWrap = document.createElement('div'); qtyWrap.style.display='flex'; qtyWrap.style.flexDirection='column'; qtyWrap.style.alignItems='end';
-    const q = document.createElement('div'); q.textContent = c.qty+' x '+formatPrice(p.price);
-    const controls = document.createElement('div'); controls.style.display='flex'; controls.style.gap='6px'; controls.style.marginTop='6px';
-    const minus = document.createElement('button'); minus.className='ghost'; minus.textContent='-'; minus.onclick=()=>{ if(c.qty>1){ c.qty--; } else state.cart.splice(idx,1); renderCartCount(); openCart(); }
-    const plus = document.createElement('button'); plus.className='ghost'; plus.textContent='+'; plus.onclick=()=>{ c.qty++; renderCartCount(); openCart(); }
-    const rem = document.createElement('button'); rem.className='ghost'; rem.textContent='Fshi'; rem.onclick=()=>{ state.cart.splice(idx,1); renderCartCount(); openCart(); }
-    controls.appendChild(minus); controls.appendChild(plus); controls.appendChild(rem);
-    qtyWrap.appendChild(q); qtyWrap.appendChild(controls);
-
-    item.appendChild(thumb); item.appendChild(info); item.appendChild(qtyWrap);
-    list.appendChild(item);
-  });
-
-  panel.appendChild(list);
-
-  const total = state.cart.reduce((s,c)=>{ const p=products.find(x=>x.id===c.productId); return s + p.price*c.qty },0);
-  const totEl = document.createElement('div'); totEl.style.marginTop='12px'; totEl.style.display='flex'; totEl.style.justifyContent='space-between'; totEl.style.alignItems='center'; totEl.innerHTML = `<div class="muted">Shuma totale</div><div style="font-weight:800">${formatPrice(total)}</div>`;
-  panel.appendChild(totEl);
-
-  // order button -> show order form
-  const orderBtn = document.createElement('button'); orderBtn.className='btn'; orderBtn.style.width='100%'; orderBtn.style.marginTop='10px'; orderBtn.textContent='Porosit (WhatsApp)';
-  orderBtn.onclick = ()=>{ openOrderForm(); }
-  panel.appendChild(orderBtn);
-
-  overlay.style.display='flex';
-}
-
-/* ------------------------- Order form & WhatsApp link ------------------------- */
-function openOrderForm(){
-  const overlay = el('overlay'); const panel = el('panelContent'); panel.innerHTML='';
-  const header = document.createElement('div'); header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
-  header.innerHTML = '<div style="font-weight:700">Forma e porosisë</div>';
-  const close = document.createElement('button'); close.className='ghost'; close.textContent='Mbylle'; close.onclick=closeOverlay; header.appendChild(close);
-  panel.appendChild(header);
-
-  const form = document.createElement('form'); form.className='row'; form.style.marginTop='10px';
-  form.innerHTML = `
-    <input name="emri" placeholder="Emri" required />
-    <input name="mbiemri" placeholder="Mbiemri" required />
-    <input name="tel" placeholder="Numri i telefonit" required />
-    <input name="qyteti" placeholder="Qyteti" required />
-    <input name="posta" placeholder="Numri i postës" required />
-    <input name="adresa" placeholder="Adresa (rruga, lagjja)" required />
-    <textarea name="komenti" placeholder="Shtoni një koment (opsional)" rows="3"></textarea>
-    <div class='muted'>Sigurohuni që e keni plotësuar numrin e telefonit e-mail vendi etj.</div>
-  `;
-  const submit = document.createElement('button'); submit.className='btn'; submit.textContent='Dërgo porosinë në WhatsApp'; submit.type='submit'; submit.style.marginTop='8px';
-  form.appendChild(submit);
-  form.onsubmit = (e)=>{ e.preventDefault(); const data = new FormData(form); const obj = Object.fromEntries(data.entries()); sendWhatsAppOrder(obj); }
-
-  panel.appendChild(form);
-  overlay.style.display='flex';
-}
-
-function sendWhatsAppOrder(customer){
-  if(SELLER_PHONE==='REPLACE_WITH_YOUR_NUMBER'){ alert('Ju lutem vendosni numrin tuaj në kod (SELLER_PHONE) për të dërguar porositë në WhatsApp.'); return }
-  // build message
-  const lines = [];
-  lines.push('💳 *Porosi nga dyqani: EMRI I DYQANIT*');
-  lines.push('');
-  lines.push('*Klienti*');
-  lines.push('Emër: ' + (customer.emri||''));
-  lines.push('Mbiemër: ' + (customer.mbiemri||''));
-  lines.push('Numër telefoni: ' + (customer.tel||''));
-  lines.push('Qytet: ' + (customer.qyteti||''));
-  lines.push('Numri i postës: ' + (customer.posta||''));
-  lines.push('Adresa: ' + (customer.adresa||''));
-  if(customer.komenti) lines.push('Koment: ' + customer.komenti);
-  lines.push('');
-  lines.push('*Produkte:*');
-
-  state.cart.forEach(c=>{
-    const p = products.find(x=>x.id===c.productId);
-    lines.push(`${c.qty} x ${p.name} (ID:${p.id}) ${c.chosenOptions ? '- ' + Object.values(c.chosenOptions).filter(Boolean).join(', '):''} - ${formatPrice(p.price)} secila`);
-  });
-  const total = state.cart.reduce((s,c)=>{ const p=products.find(x=>x.id===c.productId); return s + p.price*c.qty },0);
-  lines.push(''); lines.push('Shuma totale: ' + formatPrice(total));
-
-  const message = encodeURIComponent(lines.join('\n'));
-  const waURL = `https://wa.me/${SELLER_PHONE}?text=${message}`;
-  // open WhatsApp - on mobile this opens the WhatsApp app; on desktop it opens web.whatsapp
-  window.open(waURL, '_blank');
-}
-
-/* ------------------------- Small helpers ------------------------- */
-function showMiniToast(txt){
-  // tiny temporary toast
-  const t = document.createElement('div'); t.textContent = txt; t.style.position='fixed'; t.style.bottom='80px'; t.style.left='50%'; t.style.transform='translateX(-50%)'; t.style.background='var(--fg)'; t.style.color='var(--bg)'; t.style.padding='8px 12px'; t.style.borderRadius='999px'; t.style.zIndex=9999; document.body.appendChild(t);
-  setTimeout(()=>{ t.style.transition='opacity 0.3s'; t.style.opacity=0; setTimeout(()=>t.remove(),350) },1200);
-}
-
-/* ------------------------- Wiring UI events ------------------------- */
-el('searchInput').addEventListener('input', (e)=>{ state.query = e.target.value; renderProducts(); });
-el('cartBtn').addEventListener('click', openCart);
-el('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeOverlay(); });
-
-/* ------------------------- Init ------------------------- */
-renderCategories(); renderProducts(); renderCartCount();
-
-// Expose a small API to console for quick editing / adding categories & products
-window.__SHOP = { products, categories, addProduct: p=>{ products.push(p); renderProducts(); }, addCategory: c=>{ categories.push(c); renderCategories(); } }
-
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
